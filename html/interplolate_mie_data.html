@@ -1,0 +1,737 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>interplolate_mie_data</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-11-18"><meta name="DC.source" content="interplolate_mie_data.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Clear</a></li><li><a href="#3">generate Mie data;</a></li><li><a href="#4">spline approximations</a></li><li><a href="#5">plot some figures</a></li><li><a href="#6">Spherical spline</a></li><li><a href="#7">Green matrix function</a></li><li><a href="#8">Generate Mie data;</a></li><li><a href="#9">Great Circle computation</a></li><li><a href="#10">Compute A matrix</a></li></ul></div><pre class="codeinput"><span class="comment">% test data from Mie thoery</span>
+</pre><h2 id="2">Clear</h2><pre class="codeinput">clear ;close <span class="string">all</span>;clc;
+</pre><h2 id="3">generate Mie data;</h2><pre class="codeinput">p_size=20.0 ;  <span class="comment">% size in um ;</span>
+wavelg=0.50 ; <span class="comment">% in um;</span>
+realp= 1.20;  <span class="comment">% real part of the refractive index ;</span>
+imagp = 0.003 ; <span class="comment">% imaginary part of the refractive index ;</span>
+numb_haf=600; <span class="comment">% number of angles for half sphere;</span>
+
+[thetas, phfs]=mie_data(p_size, wavelg, realp, imagp,numb_haf);
+ phi0=0.5-pi;
+ phi=0.5;
+
+theta_flip=-flip(thetas(2:length(thetas)));
+<span class="comment">%phfs_flip=flip(phfs(2:length(phfs)));</span>
+
+<span class="comment">%new_theta=[theta_flip thetas];</span>
+new_theta=thetas;
+<span class="comment">%new_phi=[phi0 phi];</span>
+new_phi=phi0;
+<span class="comment">%new_phfs=[phfs_flip phfs];</span>
+new_phfs=phfs;
+
+<span class="comment">% data preperation</span>
+nphi=length(new_phi);
+sphere_data=repmat(new_phfs,[nphi 1]);
+sphere_data=sphere_data';
+
+<span class="comment">% dense distribution of phis</span>
+theta_dense=0:(pi/6000):pi;
+</pre><h2 id="4">spline approximations</h2><pre class="codeinput"><span class="comment">%theta_dense=thetas;</span>
+[abe, RC]=spherical_spline(new_theta, new_phi, sphere_data,<span class="keyword">...</span>
+    theta_dense,new_phi);
+Rc_sph=RC';
+</pre><h2 id="5">plot some figures</h2><pre class="codeinput">angles=rad2deg(new_theta);
+angles_dense=rad2deg(theta_dense);
+figure(1);
+plot(log(angles_dense), Rc_sph,<span class="string">'k'</span>);
+hold <span class="string">on</span>;
+plot(log(angles), sphere_data,<span class="string">'r'</span>);
+legend(<span class="string">'fiting'</span>,<span class="string">'original'</span>);
+Rc_cubic=spline(new_theta,sphere_data, theta_dense);
+figure(2);
+plot(log(angles_dense), Rc_cubic,<span class="string">'k'</span>);
+hold <span class="string">on</span>;
+plot(log(angles), sphere_data,<span class="string">'r'</span>);
+legend(<span class="string">'fiting'</span>,<span class="string">'original'</span>);
+figure(3);
+plot(log(angles_dense), Rc_cubic,<span class="string">'k'</span>);
+hold <span class="string">on</span>;
+plot(log(angles_dense), Rc_sph,<span class="string">'r'</span>);
+legend(<span class="string">'cubic spline'</span>,<span class="string">'spherical spline'</span>);
+dif=sqrt(sum((Rc_cubic-Rc_sph).^2));
+figure(4);
+plot(angles, sphere_data,<span class="string">'r'</span>);
+legend(<span class="string">'spherical data'</span>);
+cmat=[Rc_cubic' Rc_sph'];
+</pre><img vspace="5" hspace="5" src="interplolate_mie_data_01.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="interplolate_mie_data_02.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="interplolate_mie_data_03.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="interplolate_mie_data_04.png" style="width:560px;height:420px;" alt=""> <h2 id="6">Spherical spline</h2><p>DESCRIPTIVE TEXT</p><pre class="codeinput"><span class="keyword">function</span> [abe,Rc_dense ]=spherical_spline(thetas,phi,sph_data,<span class="keyword">...</span>
+    theta_dense,phi_dense)
+
+<span class="comment">% some parameters to be set</span>
+deg=0;                               <span class="comment">% degree of the spherical harmonics</span>
+delta=0.00000005;                    <span class="comment">% smoothness; if delta=0, no smoothness</span>
+beta=1.0;
+
+<span class="comment">% data column</span>
+Yc=reshape(sph_data,[],1);          <span class="comment">% y colume</span>
+
+<span class="comment">% G matrix</span>
+thetas_g=thetas-pi/2;               <span class="comment">%  adjust to -pi/2 to pi/2</span>
+Gmatrix=greenmatrix(thetas_g,phi,thetas_g,phi);
+assignin(<span class="string">'base'</span>,<span class="string">'Gmatrix'</span>,Gmatrix);
+
+<span class="comment">% B matrix</span>
+Np=size(Gmatrix,1);
+Bmt=delta*beta*eye([Np Np]);
+
+<span class="comment">% A matrix</span>
+Amt=Amatrix(deg,thetas,phi);    <span class="comment">%</span>
+assignin(<span class="string">'base'</span>,<span class="string">'Amatrix'</span>,Amt);
+
+<span class="comment">% add smoothness to G</span>
+Gmatrix=Gmatrix+Bmt;
+
+<span class="comment">% c constants and a coefficients;</span>
+cb=(Amt*(Gmatrix\(Amt)'));
+ab=(Amt*(Gmatrix\Yc));
+c_const=cb\ab;
+a_cof=Gmatrix\(Amt)'*c_const - (Gmatrix\Yc);
+
+assignin(<span class="string">'base'</span>,<span class="string">'c_const'</span>,c_const);
+assignin(<span class="string">'base'</span>,<span class="string">'a_cof'</span>,a_cof);
+
+<span class="comment">% construct the interpolation</span>
+Rc_sph=Amt'*c_const-Gmatrix*a_cof;
+
+<span class="comment">% error estimation</span>
+abse=sum((Rc_sph-Yc).^2);
+abe=sqrt(abse);
+
+<span class="comment">% compute G matrix dense</span>
+the_d=theta_dense-pi/2.0;               <span class="comment">% -pi/2 to pi/2</span>
+Gmatrix_dense=greenmatrix(thetas_g,phi,the_d,phi_dense);
+assignin(<span class="string">'base'</span>,<span class="string">'Gmatrix_dense'</span>,Gmatrix_dense);
+
+<span class="comment">% compute A matrix dense</span>
+Amt_dense=Amatrix(deg,theta_dense,phi_dense);  <span class="comment">%</span>
+assignin(<span class="string">'base'</span>,<span class="string">'Amatrix_dense'</span>,Amt_dense);
+
+<span class="comment">% dense data construction;</span>
+Rc_dense=Amt_dense'*c_const-Gmatrix_dense*a_cof;
+
+<span class="keyword">return</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="7">Green matrix function</h2><pre class="codeinput"><span class="keyword">function</span> G3=greenmatrix(theta0,phi0,theta1,phi1)
+
+<span class="comment">% apply to theta range -pi/2 to pi;</span>
+<span class="comment">% phi range -pi to pi;</span>
+
+dircos=great_circle_mesh(theta0,phi0,theta1,phi1);
+
+<span class="comment">% compute the greens functions</span>
+clog=dircos==1.0;
+dlog=dircos==-1.0;
+
+clogm=double(clog);  <span class="comment">% cos=1.0</span>
+dlogm=double(dlog);  <span class="comment">% cos=-1.0</span>
+
+Amins=1-dircos;
+Aplus=1+dircos;
+
+Nk=20;  <span class="comment">% number of term for summation</span>
+xdir=Amins/2.0;
+k=1;
+L2=(xdir).^k./((k).^2);
+<span class="keyword">for</span> k=2:Nk
+    L2=L2+(xdir).^k./((k).^2);
+<span class="keyword">end</span>
+
+G1=1-log(Amins).*(log(Aplus)-log(2))-L2-log(2)^2+log(2).*log(Aplus);
+G2=G1./(4*pi);
+G2(isnan(G2))=0;          <span class="comment">% replace the NANs with zeros;</span>
+G3=G2+(1.0/(4.0*pi))*clogm+(1.0/(4.0*pi)-pi/24.0)*dlogm;
+
+<span class="keyword">return</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="8">Generate Mie data;</h2><pre class="codeinput"><span class="keyword">function</span> [thetagrid,pdata]=mie_data(siz,wavl,realp,imagp,nang_hf)
+<span class="comment">% generate some spherical data from Mie theory</span>
+<span class="comment">% input:</span>
+<span class="comment">% 1. siz : particle radius in um (could be array)</span>
+<span class="comment">% 2. wavl: wavelength in um</span>
+<span class="comment">% 3. realp : real part of the refractive index</span>
+<span class="comment">% 4. img : imaginary part of the rafractive index</span>
+<span class="comment">% 5. nang_hf:     angle number from 0~pi/2;</span>
+<span class="comment">% output :</span>
+<span class="comment">% 1. thetagrid: mesh data of phi and theta</span>
+<span class="comment">% 2. pdata: phase function data</span>
+
+addpath(<span class="string">'./mie'</span>)  ;
+sizex=siz*2.0*pi/wavl;                 <span class="comment">% size parameters;</span>
+refin=realp+imagp*1i ;                 <span class="comment">% refractive index;</span>
+angs=2*(nang_hf-1)+1;                  <span class="comment">% total angles;</span>
+NS = length(sizex);                    <span class="comment">% number of sizes ;</span>
+QE(NS)=zeros; QS(NS)=zeros;GF(NS)=zeros; EC(NS)=zeros;
+QB(NS)=zeros; AB(NS)=zeros; p11(NS,angs)=zeros;
+
+
+ <span class="keyword">for</span> k=1:NS
+    [ss1,ss2,QE(k),QS(k),QB(k),GF(k)]=mie(sizex(k),refin,nang_hf);
+    phf=0.50*(abs(ss2).^2+abs(ss1).^2);
+    EC(k)=QE(k)*pi*sizex(k)^2;
+    AB(k)=QS(k)/QE(k);
+    p11(k,1:end)=phf*4.0*pi/EC(k)/AB(k);
+
+ <span class="keyword">end</span>
+
+
+Angs=0:180/(angs-1):180;
+thetagrid=pi*Angs/180.0;
+pdata=log(p11);
+
+<span class="keyword">return</span>
+<span class="keyword">end</span>
+</pre><h2 id="9">Great Circle computation</h2><pre class="codeinput"><span class="keyword">function</span> [dsig]=great_circle_mesh(theta0,phi0,theta1,phi1)
+
+<span class="comment">% apply to theta range -pi/2 to pi;</span>
+<span class="comment">% phi range -pi to pi;</span>
+<span class="comment">% compute the great distance angle;</span>
+
+[tm0, tm1]=meshgrid(theta0, theta1);
+[pm0, pm1]=meshgrid(phi0, phi1);
+
+cth0_c=cos(theta0);
+cth1_c=cos(theta1);
+sth0_c=sin(theta0);
+sth1_c=sin(theta1);
+
+cc12_n=cth1_c'*cth0_c;
+ss12_n=sth1_c'*sth0_c;
+cs12_n=cth1_c'*sth0_c;
+sc12_n=sth1_c'*cth0_c;
+
+<span class="comment">% phi matrix ;</span>
+pmm=abs(pm0-pm1);
+cphi=cos(pmm);
+sphi=sin(pmm);
+
+<span class="comment">% outer product ;</span>
+
+cth1 = cos(tm1);
+cc12_cphi = kron(cphi,cc12_n);
+ss12_m = repmat(ss12_n,size(cphi));
+sc12_cphi = kron(cphi,sc12_n);
+cs12_m = repmat(cs12_n, size(cphi));
+cth1_sphi = kron(sphi,cth1);
+uper=sqrt(cth1_sphi.^2. + (cs12_m-sc12_cphi).^2.) ;
+lower=ss12_m+cc12_cphi;
+sig=atan2(uper,lower);
+
+<span class="comment">% cosine of angle</span>
+dsig=cos(sig);
+
+<span class="keyword">return</span>
+<span class="keyword">end</span>
+</pre><h2 id="10">Compute A matrix</h2><pre class="codeinput"><span class="keyword">function</span> Amn = Amatrix (m,  theta_s,phi)
+
+ <span class="comment">% m is the order of the fundamental system</span>
+ <span class="comment">% N is the number of data</span>
+ <span class="comment">% etaN is the direction data storing</span>
+ <span class="comment">% has the form of (theta phi), theta is in (0,pi)</span>
+ <span class="comment">% phi is in (0, 2pi)</span>
+
+[L2,T2]=meshgrid(phi,theta_s);
+thetac=reshape(T2,[],1);
+phic=reshape(L2,[],1);
+etaN=[thetac phic];
+ N=size(etaN,1);
+
+<span class="keyword">if</span> (m==0)
+    Amn(1,1:N)=sqrt(1/(4.0*pi));
+    <span class="keyword">return</span>
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> (m~=0)
+    Amn((m+1)^2,N)=zeros;
+    Amn(1,1:N)=sqrt(1/(4.0*pi));
+    <span class="keyword">for</span> k=1:m
+     Amn(k^2+1:(k+1)^2,1:N)=sphmonics(k,etaN(:,1),etaN(:,2),N);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% rewrite the function using column matrix</span>
+     <span class="keyword">function</span> sphm=sphmonics(deg,thetaco,phico,nd)
+      Plm = legendre(deg,cos(thetaco)); <span class="comment">% adjust the range of theta</span>
+      Sinf(deg,nd)=zeros;
+      Cosf(deg,nd)=zeros;
+      Al=1:deg;
+      Al=Al';
+      Sinf(1:deg,1:nd)=(-1).^(Al).*sin(Al.*phico');
+      Cosf(1:deg,1:nd)=(-1).^(Al).*cos(Al.*phico');
+      lmf=(2*deg+1)*(factorial(deg-Al))/(4.0*pi)./(factorial(deg+Al));
+      lmf=sqrt(2)*sqrt(lmf);
+      Norf=repmat(lmf,[1 nd]);
+      Pmp=Norf.*Cosf.*Plm(2:deg+1,:); <span class="comment">% m&gt;0;</span>
+      Pmn=Norf.*Sinf.*Plm(2:deg+1,:); <span class="comment">% m&lt;0;</span>
+      Pmn=flip(Pmn);                  <span class="comment">% m&lt;0;</span>
+      norf0=sqrt((2*deg+1)/(4.0*pi)); <span class="comment">% m=0;</span>
+      Pm0=norf0*Plm(1,:);
+      sphm=[Pmn;Pm0;Pmp];
+      <span class="keyword">return</span>
+     <span class="keyword">end</span>
+  <span class="comment">%size(Amn)</span>
+ <span class="keyword">return</span>
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+
+% test data from Mie thoery
+%% Clear 
+clear ;close all;clc; 
+%% generate Mie data;
+
+p_size=20.0 ;  % size in um ; 
+wavelg=0.50 ; % in um; 
+realp= 1.20;  % real part of the refractive index ; 
+imagp = 0.003 ; % imaginary part of the refractive index ; 
+numb_haf=600; % number of angles for half sphere; 
+
+[thetas, phfs]=mie_data(p_size, wavelg, realp, imagp,numb_haf);
+ phi0=0.5-pi;
+ phi=0.5;
+
+theta_flip=-flip(thetas(2:length(thetas)));
+%phfs_flip=flip(phfs(2:length(phfs)));
+
+%new_theta=[theta_flip thetas];
+new_theta=thetas; 
+%new_phi=[phi0 phi];
+new_phi=phi0;
+%new_phfs=[phfs_flip phfs];
+new_phfs=phfs;
+
+% data preperation
+nphi=length(new_phi);
+sphere_data=repmat(new_phfs,[nphi 1]);
+sphere_data=sphere_data';
+
+% dense distribution of phis 
+theta_dense=0:(pi/6000):pi;
+%%  spline approximations
+
+%theta_dense=thetas;
+[abe, RC]=spherical_spline(new_theta, new_phi, sphere_data,...
+    theta_dense,new_phi);
+Rc_sph=RC';
+
+
+%% plot some figures 
+
+
+angles=rad2deg(new_theta);
+angles_dense=rad2deg(theta_dense);
+figure(1);
+plot(log(angles_dense), Rc_sph,'k');
+hold on;
+plot(log(angles), sphere_data,'r');
+legend('fiting','original');
+Rc_cubic=spline(new_theta,sphere_data, theta_dense);
+figure(2);
+plot(log(angles_dense), Rc_cubic,'k');
+hold on;
+plot(log(angles), sphere_data,'r');
+legend('fiting','original');
+figure(3);
+plot(log(angles_dense), Rc_cubic,'k');
+hold on; 
+plot(log(angles_dense), Rc_sph,'r');
+legend('cubic spline','spherical spline');
+dif=sqrt(sum((Rc_cubic-Rc_sph).^2));
+figure(4);
+plot(angles, sphere_data,'r');
+legend('spherical data');
+cmat=[Rc_cubic' Rc_sph'];
+%% Spherical spline 
+% DESCRIPTIVE TEXT
+
+function [abe,Rc_dense ]=spherical_spline(thetas,phi,sph_data,...
+    theta_dense,phi_dense)
+
+% some parameters to be set
+deg=0;                               % degree of the spherical harmonics
+delta=0.00000005;                    % smoothness; if delta=0, no smoothness
+beta=1.0;                           
+
+% data column
+Yc=reshape(sph_data,[],1);          % y colume
+
+% G matrix 
+thetas_g=thetas-pi/2;               %  adjust to -pi/2 to pi/2
+Gmatrix=greenmatrix(thetas_g,phi,thetas_g,phi); 
+assignin('base','Gmatrix',Gmatrix);
+
+% B matrix 
+Np=size(Gmatrix,1);
+Bmt=delta*beta*eye([Np Np]);
+
+% A matrix 
+Amt=Amatrix(deg,thetas,phi);    % 
+assignin('base','Amatrix',Amt);
+
+% add smoothness to G 
+Gmatrix=Gmatrix+Bmt;
+
+% c constants and a coefficients;
+cb=(Amt*(Gmatrix\(Amt)'));
+ab=(Amt*(Gmatrix\Yc));
+c_const=cb\ab;
+a_cof=Gmatrix\(Amt)'*c_const - (Gmatrix\Yc);
+
+assignin('base','c_const',c_const);
+assignin('base','a_cof',a_cof);
+
+% construct the interpolation 
+Rc_sph=Amt'*c_const-Gmatrix*a_cof;
+
+% error estimation
+abse=sum((Rc_sph-Yc).^2);
+abe=sqrt(abse);
+
+% compute G matrix dense 
+the_d=theta_dense-pi/2.0;               % -pi/2 to pi/2
+Gmatrix_dense=greenmatrix(thetas_g,phi,the_d,phi_dense); 
+assignin('base','Gmatrix_dense',Gmatrix_dense);
+
+% compute A matrix dense
+Amt_dense=Amatrix(deg,theta_dense,phi_dense);  % 
+assignin('base','Amatrix_dense',Amt_dense);
+
+% dense data construction; 
+Rc_dense=Amt_dense'*c_const-Gmatrix_dense*a_cof;
+
+return
+
+end
+%% Green matrix function 
+
+function G3=greenmatrix(theta0,phi0,theta1,phi1)
+
+% apply to theta range -pi/2 to pi; 
+% phi range -pi to pi; 
+
+dircos=great_circle_mesh(theta0,phi0,theta1,phi1);
+
+% compute the greens functions 
+clog=dircos==1.0;
+dlog=dircos==-1.0;
+
+clogm=double(clog);  % cos=1.0
+dlogm=double(dlog);  % cos=-1.0
+
+Amins=1-dircos;
+Aplus=1+dircos;
+
+Nk=20;  % number of term for summation 
+xdir=Amins/2.0;
+k=1; 
+L2=(xdir).^k./((k).^2);
+for k=2:Nk
+    L2=L2+(xdir).^k./((k).^2);
+end
+
+G1=1-log(Amins).*(log(Aplus)-log(2))-L2-log(2)^2+log(2).*log(Aplus);
+G2=G1./(4*pi);
+G2(isnan(G2))=0;          % replace the NANs with zeros; 
+G3=G2+(1.0/(4.0*pi))*clogm+(1.0/(4.0*pi)-pi/24.0)*dlogm; 
+
+return
+
+end
+%% Generate Mie data; 
+
+function [thetagrid,pdata]=mie_data(siz,wavl,realp,imagp,nang_hf)
+% generate some spherical data from Mie theory 
+% input: 
+% 1. siz : particle radius in um (could be array)
+% 2. wavl: wavelength in um 
+% 3. realp : real part of the refractive index 
+% 4. img : imaginary part of the rafractive index 
+% 5. nang_hf:     angle number from 0~pi/2;
+% output : 
+% 1. thetagrid: mesh data of phi and theta  
+% 2. pdata: phase function data 
+
+addpath('./mie')  ;
+sizex=siz*2.0*pi/wavl;                 % size parameters; 
+refin=realp+imagp*1i ;                 % refractive index; 
+angs=2*(nang_hf-1)+1;                  % total angles; 
+NS = length(sizex);                    % number of sizes ;  
+QE(NS)=zeros; QS(NS)=zeros;GF(NS)=zeros; EC(NS)=zeros; 
+QB(NS)=zeros; AB(NS)=zeros; p11(NS,angs)=zeros; 
+
+
+ for k=1:NS      
+    [ss1,ss2,QE(k),QS(k),QB(k),GF(k)]=mie(sizex(k),refin,nang_hf); 
+    phf=0.50*(abs(ss2).^2+abs(ss1).^2); 
+    EC(k)=QE(k)*pi*sizex(k)^2; 
+    AB(k)=QS(k)/QE(k);      
+    p11(k,1:end)=phf*4.0*pi/EC(k)/AB(k); 
+   
+ end
+ 
+ 
+Angs=0:180/(angs-1):180;
+thetagrid=pi*Angs/180.0;
+pdata=log(p11); 
+
+return
+end
+
+
+%% Great Circle computation 
+
+function [dsig]=great_circle_mesh(theta0,phi0,theta1,phi1)
+
+% apply to theta range -pi/2 to pi; 
+% phi range -pi to pi; 
+% compute the great distance angle;
+
+[tm0, tm1]=meshgrid(theta0, theta1);
+[pm0, pm1]=meshgrid(phi0, phi1);
+
+cth0_c=cos(theta0); 
+cth1_c=cos(theta1); 
+sth0_c=sin(theta0);
+sth1_c=sin(theta1);
+
+cc12_n=cth1_c'*cth0_c; 
+ss12_n=sth1_c'*sth0_c; 
+cs12_n=cth1_c'*sth0_c; 
+sc12_n=sth1_c'*cth0_c; 
+
+% phi matrix ; 
+pmm=abs(pm0-pm1);            
+cphi=cos(pmm);   
+sphi=sin(pmm); 
+
+% outer product ; 
+
+cth1 = cos(tm1); 
+cc12_cphi = kron(cphi,cc12_n);
+ss12_m = repmat(ss12_n,size(cphi));
+sc12_cphi = kron(cphi,sc12_n);
+cs12_m = repmat(cs12_n, size(cphi));
+cth1_sphi = kron(sphi,cth1);
+uper=sqrt(cth1_sphi.^2. + (cs12_m-sc12_cphi).^2.) ;
+lower=ss12_m+cc12_cphi; 
+sig=atan2(uper,lower);
+
+% cosine of angle 
+dsig=cos(sig);
+
+return
+end
+
+%% Compute A matrix 
+
+function Amn = Amatrix (m,  theta_s,phi)
+
+ % m is the order of the fundamental system 
+ % N is the number of data 
+ % etaN is the direction data storing 
+ % has the form of (theta phi), theta is in (0,pi)
+ % phi is in (0, 2pi)
+ 
+[L2,T2]=meshgrid(phi,theta_s);
+thetac=reshape(T2,[],1);
+phic=reshape(L2,[],1);
+etaN=[thetac phic];
+ N=size(etaN,1);
+ 
+if (m==0)
+    Amn(1,1:N)=sqrt(1/(4.0*pi));
+    return
+end
+
+if (m~=0)
+    Amn((m+1)^2,N)=zeros; 
+    Amn(1,1:N)=sqrt(1/(4.0*pi));
+    for k=1:m   
+     Amn(k^2+1:(k+1)^2,1:N)=sphmonics(k,etaN(:,1),etaN(:,2),N);       
+    end
+end
+
+% rewrite the function using column matrix 
+     function sphm=sphmonics(deg,thetaco,phico,nd)
+      Plm = legendre(deg,cos(thetaco)); % adjust the range of theta
+      Sinf(deg,nd)=zeros; 
+      Cosf(deg,nd)=zeros;
+      Al=1:deg; 
+      Al=Al';
+      Sinf(1:deg,1:nd)=(-1).^(Al).*sin(Al.*phico');
+      Cosf(1:deg,1:nd)=(-1).^(Al).*cos(Al.*phico');
+      lmf=(2*deg+1)*(factorial(deg-Al))/(4.0*pi)./(factorial(deg+Al));
+      lmf=sqrt(2)*sqrt(lmf);
+      Norf=repmat(lmf,[1 nd]);
+      Pmp=Norf.*Cosf.*Plm(2:deg+1,:); % m>0;
+      Pmn=Norf.*Sinf.*Plm(2:deg+1,:); % m<0;
+      Pmn=flip(Pmn);                  % m<0;
+      norf0=sqrt((2*deg+1)/(4.0*pi)); % m=0;
+      Pm0=norf0*Plm(1,:);  
+      sphm=[Pmn;Pm0;Pmp];  
+      return
+     end
+  %size(Amn)
+ return
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>
